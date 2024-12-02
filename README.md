@@ -1,66 +1,103 @@
-# PROXMOX-Scripts
+Yes, you can extend the script to include the update and upgrade process for the Proxmox node itself (pve1). Below is the updated script that handles both the LXC containers and the Proxmox node.
 
-Below is an example Bash script that iterates through all LXC containers and runs the update and upgrade commands within each container:
+Updated Script: update-node-and-containers.sh
 
-Script: update-containers.sh
-
-#!/bin/bash
-
-# Log file for update output
-LOGFILE="/var/log/lxc-update.log"
-
-# Get a list of all LXC container IDs
-CONTAINERS=$(pct list | awk 'NR>1 {print $1}')
-
-# Start logging
-echo "Starting container updates: $(date)" >> "$LOGFILE"
-
-# Loop through each container and perform updates
-for CTID in $CONTAINERS; do
-    echo "Updating container ID: $CTID" | tee -a "$LOGFILE"
-    
-    # Check if the container is running
-    if pct status $CTID | grep -q "status: running"; then
-        # Run apt update and upgrade inside the container
-        pct exec $CTID -- bash -c "apt update && apt upgrade -y" | tee -a "$LOGFILE"
-    else
+	#!/bin/bash
+	
+	# Log file for update output
+	LOGFILE="/var/log/lxc-update.log"
+	
+	# Start logging
+	echo "Starting updates for node and containers: $(date)" >> "$LOGFILE"
+	echo "------------------------------------------" >> "$LOGFILE"
+	
+	# Step 1: Update the Proxmox node (pve1)
+	echo "Updating Proxmox node (pve1)..." | tee -a "$LOGFILE"
+	NODE_OUTPUT=$(apt update && apt upgrade -y)
+	NODE_UPGRADED=$(echo "$NODE_OUTPUT" | grep -Po '\d+ upgraded' | grep -Po '\d+')
+	NODE_UPGRADED=${NODE_UPGRADED:-0}
+	echo "Proxmox node: $NODE_UPGRADED packages upgraded." | tee -a "$LOGFILE"
+	echo "------------------------------------------" | tee -a "$LOGFILE"
+	
+	# Step 2: Get a list of all LXC container IDs
+	CONTAINERS=$(pct list | awk 'NR>1 {print $1}')
+	
+	# Loop through each container and perform updates
+	for CTID in $CONTAINERS; do
+    	echo "Updating container ID: $CTID" | tee -a "$LOGFILE"
+    	
+    	# Check if the container is running
+    	if pct status $CTID | grep -q "status: running"; then
+        # Run apt update and capture upgrade details
+        OUTPUT=$(pct exec $CTID -- bash -c "apt update && apt upgrade -y")
+        
+        # Extract the number of packages upgraded from the output
+        UPGRADED=$(echo "$OUTPUT" | grep -Po '\d+ upgraded' | grep -Po '\d+')
+        
+        # If no packages were upgraded, set UPGRADED to 0
+        UPGRADED=${UPGRADED:-0}
+        
+        echo "Container $CTID: $UPGRADED packages upgraded." | tee -a "$LOGFILE"
+    	else
         echo "Container $CTID is not running. Skipping." | tee -a "$LOGFILE"
-    fi
-done
+    	fi
+    	
+    	echo "------------------------------------------" | tee -a "$LOGFILE"
+	done
+	
+	echo "All updates completed: $(date)" >> "$LOGFILE"'
 
-echo "All updates completed: $(date)" >> "$LOGFILE"
+Explanation of Node Update
 
-Steps to Implement
+1. Proxmox Node Update:
+- The script runs apt update && apt upgrade -y on the host node (pve1).
+- Captures and logs the number of packages upgraded for the node.
+2. Log Details:
+- Both the node and the containers log their respective outputs and upgraded package counts.
 
-	1.	Create the Script File:
-	•	Save the script above to a file, e.g., /usr/local/bin/update-containers.sh.
-	2.	Make the Script Executable:
+Scheduling Weekly Execution
 
-chmod +x /usr/local/bin/update-containers.sh
+1. Edit Crontab:
+- Add the script to your crontab for weekly execution:
 
+	crontab -e
 
-	3.	Schedule Weekly Execution with Cron:
-	•	Edit the crontab:
+- Add this line to schedule the script every Sunday at midnight:
 
-crontab -e
-
-
-	•	Add the following line to run the script every week, e.g., Sunday at midnight:
-
-0 0 * * 0 /usr/local/bin/update-containers.sh
-
-
-	4.	Optional: Test the Script:
-	•	Run the script manually to ensure it works as expected:
-
-sudo /usr/local/bin/update-containers.sh
+	0 0 * * 0 /usr/local/bin/update-node-and-containers.sh
 
 
 
-Notes
+Output Example
 
-	•	Log File: Updates are logged in /var/log/lxc-update.log for later review.
-	•	Error Handling: You can expand the script to include error handling for specific edge cases (e.g., containers that fail to update).
-	•	Customization: Modify the apt commands to suit your environment (e.g., adding autoremove or clean).
+When the script runs, the output will look like this:
 
-This approach keeps your Proxmox containers updated automatically and ensures a centralized log for monitoring.
+	Starting updates for node and containers: Sun Dec  1 00:00:00 UTC 2024
+	------------------------------------------
+	Updating Proxmox node (pve1)...
+	Proxmox node: 8 packages upgraded.
+	------------------------------------------
+	Updating container ID: 101
+	Container 101: 12 packages upgraded.
+	------------------------------------------
+	Updating container ID: 102
+	Container 102: 0 packages upgraded.
+	------------------------------------------
+	Updating container ID: 103
+	Container 103: 5 packages upgraded.
+	------------------------------------------
+	All updates completed: Sun Dec  1 00:10:00 UTC 2024
+
+Testing
+
+1. Run the script manually to ensure both the node and containers are updated correctly:
+
+	sudo /usr/local/bin/update-node-and-containers.sh
+
+
+2. Check the logs:
+- The output is stored in /var/log/lxc-update.log.
+
+Note
+
+Ensure the script is run with appropriate permissions (e.g., root) to allow updates on both the Proxmox node and containers.
