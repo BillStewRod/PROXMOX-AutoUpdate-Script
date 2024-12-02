@@ -69,7 +69,7 @@
 
 ### Scheduling Weekly Execution
 
-Edit Crontab
+Edit Crontab:
 <ol>
 <li>Add the script to your crontab for weekly execution:</li>
 
