@@ -67,22 +67,21 @@
 </ul>
 </ol>
 
-Scheduling Weekly Execution
+### Scheduling Weekly Execution
 
-1. Edit Crontab:
-- Add the script to your crontab for weekly execution:
+#### Edit Crontab
+<ol>
+<li>Add the script to your crontab for weekly execution:</li>
 
 	crontab -e
 
-- Add this line to schedule the script every Sunday at midnight:
+<li>Add this line to schedule the script every Sunday at midnight:</li>
 
 	0 0 * * 0 /usr/local/bin/update-node-and-containers.sh
 
+### Output Example
 
-
-Output Example
-
-When the script runs, the output will look like this:
+<p>When the script runs, the output will look like this:</p>
 
 	Starting updates for node and containers: Sun Dec  1 00:00:00 UTC 2024
 	------------------------------------------
@@ -100,16 +99,15 @@ When the script runs, the output will look like this:
 	------------------------------------------
 	All updates completed: Sun Dec  1 00:10:00 UTC 2024
 
-Testing
-
-1. Run the script manually to ensure both the node and containers are updated correctly:
+### Testing
+<ol>
+<li>Run the script manually to ensure both the node and containers are updated correctly:</li>
 
 	sudo /usr/local/bin/update-node-and-containers.sh
 
+<li>Check the logs:</li>
+-The output is stored in /var/log/lxc-update.log.
+</ol>
 
-2. Check the logs:
-- The output is stored in /var/log/lxc-update.log.
-
-Note
-
-Ensure the script is run with appropriate permissions (e.g., root) to allow updates on both the Proxmox node and containers.
+**Note**
+*Ensure the script is run with appropriate permissions (e.g., root) to allow updates on both the Proxmox node and containers.*
