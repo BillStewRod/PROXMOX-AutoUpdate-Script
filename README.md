@@ -69,7 +69,7 @@
 
 ### Scheduling Weekly Execution
 
-#### Edit Crontab
+Edit Crontab
 <ol>
 <li>Add the script to your crontab for weekly execution:</li>
 
@@ -106,8 +106,10 @@
 	sudo /usr/local/bin/update-node-and-containers.sh
 
 <li>Check the logs:</li>
--The output is stored in /var/log/lxc-update.log.
+<ul>
+	<li>The output is stored in /var/log/lxc-update.log.</li>
+</ul>
 </ol>
 
-**Note**
+**Note:**
 *Ensure the script is run with appropriate permissions (e.g., root) to allow updates on both the Proxmox node and containers.*
