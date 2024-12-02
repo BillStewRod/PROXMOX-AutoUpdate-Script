@@ -78,6 +78,7 @@ Edit Crontab
 <li>Add this line to schedule the script every Sunday at midnight:</li>
 
 	0 0 * * 0 /usr/local/bin/update-node-and-containers.sh
+</ol>
 
 ### Output Example
 
