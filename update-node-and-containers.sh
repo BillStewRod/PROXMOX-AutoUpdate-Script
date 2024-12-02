@@ -3,12 +3,20 @@
 # Log file for update output
 LOGFILE="/var/log/lxc-update.log"
 
-# Get a list of all LXC container IDs
-CONTAINERS=$(pct list | awk 'NR>1 {print $1}')
-
 # Start logging
-echo "Starting container updates: $(date)" >> "$LOGFILE"
+echo "Starting updates for node and containers: $(date)" >> "$LOGFILE"
 echo "------------------------------------------" >> "$LOGFILE"
+
+# Step 1: Update the Proxmox node (pve1)
+echo "Updating Proxmox node (pve1)..." | tee -a "$LOGFILE"
+NODE_OUTPUT=$(apt update && apt upgrade -y)
+NODE_UPGRADED=$(echo "$NODE_OUTPUT" | grep -Po '\d+ upgraded' | grep -Po '\d+')
+NODE_UPGRADED=${NODE_UPGRADED:-0}
+echo "Proxmox node: $NODE_UPGRADED packages upgraded." | tee -a "$LOGFILE"
+echo "------------------------------------------" | tee -a "$LOGFILE"
+
+# Step 2: Get a list of all LXC container IDs
+CONTAINERS=$(pct list | awk 'NR>1 {print $1}')
 
 # Loop through each container and perform updates
 for CTID in $CONTAINERS; do
