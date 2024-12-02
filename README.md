@@ -1,6 +1,12 @@
-Yes, you can extend the script to include the update and upgrade process for the Proxmox node itself (pve1). Below is the updated script that handles both the LXC containers and the Proxmox node.
+# How to create a PROXMOX update script
 
-Updated Script: update-node-and-containers.sh
+<p>Below is the updated script that handles both the LXC containers and the Proxmox node.</p>
+
+### Script name: 
+
+	update-node-and-containers.sh
+
+### Script
 
 	#!/bin/bash
 	
@@ -47,13 +53,19 @@ Updated Script: update-node-and-containers.sh
 	
 	echo "All updates completed: $(date)" >> "$LOGFILE"'
 
-Explanation of Node Update
+### Explanation of Node Update
 
-1. Proxmox Node Update:
-- The script runs apt update && apt upgrade -y on the host node (pve1).
-- Captures and logs the number of packages upgraded for the node.
-2. Log Details:
-- Both the node and the containers log their respective outputs and upgraded package counts.
+<ol>
+<li>Proxmox Node Update:</li>
+<ul>
+<li>The script runs apt update && apt upgrade -y on the host node (pve1).</li>
+<li>Captures and logs the number of packages upgraded for the node.</li>
+</ul>
+<li>Log Details:</li>
+<ul>
+<li>Both the node and the containers log their respective outputs and upgraded package counts.</li>
+</ul>
+</ol>
 
 Scheduling Weekly Execution
 
